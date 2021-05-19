@@ -19,7 +19,7 @@ const fastifyExitHandler: FastifyPluginCallback = (app, _, done) => (
   ['uncaughtException', 'unhandledRejection'].forEach(event =>
     process.on(event, error => handleExit(undefined, error, 0, app)),
   ),
-  app.decorate('exit', (code: number, error?: Error, signal?: NodeJS.Signals) => handleExit(signal, error, code, app)),
+  app.decorate('exit', (code: number, error?: Error) => handleExit(undefined, error, code, app)),
   done()
 );
 
@@ -27,12 +27,12 @@ export default fp(fastifyExitHandler);
 
 async function handleExit(
   signal: NodeJS.Signals | undefined,
-  error: Error | undefined,
+  err: Error | undefined,
   code: number,
   app: FastifyInstance,
 ) {
   if (signal) app.log.info({ signal }, 'caught NodeJS exit signal');
-  if (error) app.log.info(error, 'error caused process to exit');
+  if (err) app.log.info({ err }, 'error caused process to exit');
   app.log.info('shutting down app...');
   try {
     await app.close();
@@ -45,6 +45,6 @@ async function handleExit(
 
 declare module 'fastify' {
   interface FastifyInstance {
-    exit: (code: number, error?: Error, signal?: NodeJS.Signals) => Promise<never>;
+    exit: (code: number, error?: Error) => Promise<never>;
   }
 }
