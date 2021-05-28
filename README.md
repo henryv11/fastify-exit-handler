@@ -1,1 +1,3 @@
-this is just a template
+# Fastify exit handler
+
+Tries to shut down fastify app gracefully on process exit
