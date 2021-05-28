@@ -1,14 +1,23 @@
 {
-  "name": "fastify-exit-handler",
+  "name": "@heviir/fastify-exit-handler",
   "version": "1.0.0",
-  "description": "",
+  "description": "fastify exit handler",
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
     "build": "tsc"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "fastify",
+    "nodejs",
+    "exit handler"
+  ],
+  "files": [
+    "dist/*"
+  ],
+  "repository": "github:henryv11/fastify-exit-handler",
+  "homepage": "https://github.com/henryv11/fastify-exit-handler",
+  "author": "h.viirmae@gmail.com",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^26.0.22",
