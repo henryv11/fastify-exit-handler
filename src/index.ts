@@ -2,22 +2,25 @@ import { FastifyInstance, FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 
 const fastifyExitHandler: FastifyPluginCallback = (app, _, done) => (
-  [
-    'SIGHUP',
-    'SIGINT',
-    'SIGQUIT',
-    'SIGKILL',
-    'SIGTRAP',
-    'SIGABRT',
-    'SIGBUS',
-    'SIGFPE',
-    'SIGUSR1',
-    'SIGSEGV',
-    'SIGUSR2',
-    'SIGTERM',
-  ].forEach(signal => process.on(signal, signal => handleExit(signal, undefined, 0, app))),
-  ['uncaughtException', 'unhandledRejection'].forEach(event =>
-    process.on(event, error => handleExit(undefined, error, 0, app)),
+  (
+    [
+      'SIGHUP',
+      'SIGINT',
+      'SIGQUIT',
+      'SIGKILL',
+      'SIGTRAP',
+      'SIGABRT',
+      'SIGBUS',
+      'SIGFPE',
+      'SIGUSR1',
+      'SIGSEGV',
+      'SIGUSR2',
+      'SIGTERM',
+    ] as const
+  ).forEach(signal => process.once(signal, signal => handleExit(signal, undefined, 0, app))),
+  process.once('uncaughtException', error => handleExit(undefined, error, 0, app)),
+  process.once('unhandledRejection', (error, promise) =>
+    handleExit(undefined, new UnhandledRejectionError(error, promise), 0, app),
   ),
   app.decorate('exit', (code: number, error?: Error) => handleExit(undefined, error, code, app)),
   done()
@@ -41,6 +44,13 @@ async function handleExit(
   }
   app.log.info('exiting process. Goodbye!');
   process.exit(code);
+}
+
+class UnhandledRejectionError extends Error {
+  constructor(public error: Record<string, unknown> | null | undefined, public promise: Promise<unknown>) {
+    super('Unhandled promise rejection');
+    Error.captureStackTrace(this);
+  }
 }
 
 declare module 'fastify' {
