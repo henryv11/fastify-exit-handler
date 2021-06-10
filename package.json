@@ -1,6 +1,6 @@
 {
   "name": "@heviir/fastify-exit-handler",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "fastify exit handler",
   "main": "dist/index.js",
   "scripts": {
