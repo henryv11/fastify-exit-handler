@@ -1,32 +1,33 @@
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 
+const PLUGIN_NAME = 'fastify-exit-handler';
+
+const EXIT_SIGNALS = [
+  'SIGHUP',
+  'SIGINT',
+  'SIGQUIT',
+  'SIGTRAP',
+  'SIGABRT',
+  'SIGBUS',
+  'SIGFPE',
+  'SIGUSR1',
+  'SIGSEGV',
+  'SIGUSR2',
+  'SIGTERM',
+] as const;
+
 export default fp(
   async app => {
-    const log = app.log.child({ plugin: 'fastify-exit-handler' });
-    (
-      [
-        'SIGHUP',
-        'SIGINT',
-        'SIGQUIT',
-        'SIGKILL',
-        'SIGTRAP',
-        'SIGABRT',
-        'SIGBUS',
-        'SIGFPE',
-        'SIGUSR1',
-        'SIGSEGV',
-        'SIGUSR2',
-        'SIGTERM',
-      ] as const
-    ).forEach(signal => process.once(signal, signal => handleExit(signal, undefined, 0, app, log)));
+    const log = app.log.child({ plugin: PLUGIN_NAME });
+    EXIT_SIGNALS.forEach(signal => process.once(signal, signal => handleExit(signal, undefined, 0, app, log)));
     process.once('uncaughtException', error => handleExit(undefined, error, 0, app, log));
     process.once('unhandledRejection', (error, promise) =>
       handleExit(undefined, new UnhandledRejectionError(error, promise), 0, app, log),
     );
     app.decorate('exit', (code: number, error?: Error) => handleExit(undefined, error, code, app, log));
   },
-  { name: 'fastify-exit-handler' },
+  { name: PLUGIN_NAME },
 );
 
 async function handleExit(
